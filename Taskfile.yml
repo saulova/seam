@@ -1,0 +1,34 @@
+version: "3"
+
+tasks:
+  build-plugins:
+    desc: "Build plugins"
+    env:
+      GO111MODULE: on
+      CGO_ENABLED: 1
+    cmds:
+      - |
+        set -e
+        for dir in ./plugins/*; do
+          go build -buildmode=plugin -o=/plugins/$(basename $dir).so $dir/plugin.go;
+        done
+
+  build-app:
+    desc: Build app
+    env:
+      GO111MODULE: on
+      CGO_ENABLED: 1
+      GOOS: linux
+      GOARCH: amd64
+    cmds:
+      - go build -o=./entrypoint/seam ./entrypoint
+
+  dev:
+    desc: Run app
+    env:
+      GO111MODULE: on
+      CGO_ENABLED: 1
+      GOOS: linux
+      GOARCH: amd64
+    cmds:
+      - go run ./entrypoint/main.go
