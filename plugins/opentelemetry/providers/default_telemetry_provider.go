@@ -55,10 +55,13 @@ func (d *DefaultTelemetryProvider) setConfig(config interface{}) error {
 }
 
 func (d *DefaultTelemetryProvider) newResource() (*resource.Resource, error) {
+	//return resource.Merge(
+	//resource.Default(),
 	return resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceNameKey.String(d.config.ServiceName),
 	), nil
+	//)
 }
 
 func (d *DefaultTelemetryProvider) newTraceExporter() (sdktrace.SpanExporter, error) {

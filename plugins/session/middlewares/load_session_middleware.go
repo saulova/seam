@@ -9,13 +9,13 @@ import (
 	"github.com/saulova/seam/plugins/session/managers"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/session"
 )
 
 type LoadSessionMiddleware struct {
 	sessionManager   *managers.SessionManager
 	storagesMediator interfaces.StoragesMediatorInterface
+	logger           interfaces.LoggerInterface
 }
 
 const LoadSessionMiddlewareId = "plugins.session.middlewares.LoadSessionMiddleware"
@@ -25,10 +25,12 @@ func NewLoadSessionMiddleware() interfaces.BuilderInterface {
 
 	sessionManager := dependencyContainer.GetDependency(managers.SessionManagerId).(*managers.SessionManager)
 	storagesMediator := dependencyContainer.GetDependency(interfaces.StoragesMediatorInterfaceId).(interfaces.StoragesMediatorInterface)
+	logger := dependencyContainer.GetDependency(interfaces.LoggerInterfaceId).(interfaces.LoggerInterface)
 
 	instance := &LoadSessionMiddleware{
 		sessionManager:   sessionManager,
 		storagesMediator: storagesMediator,
+		logger:           logger,
 	}
 
 	dependencyContainer.AddDependency(LoadSessionMiddlewareId, instance)
@@ -70,7 +72,7 @@ func (l *LoadSessionMiddleware) Build(config interface{}) (interface{}, error) {
 	middlewareFunc := func(ctx *fiber.Ctx) error {
 		err := l.sessionManager.LoadSession(sessionStore, loadSessionMiddlewareConfig.AutoRenewAfter, ctx)
 		if err != nil {
-			log.Error(err)
+			l.logger.Error("load session error", err)
 
 			return ctx.Next()
 		}

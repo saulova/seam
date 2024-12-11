@@ -1,11 +1,10 @@
 package managers
 
 import (
-	"log"
-
 	"github.com/saulova/seam/libs/dependencies"
+	libsInterfaces "github.com/saulova/seam/libs/interfaces"
 	"github.com/saulova/seam/plugins/opentelemetry/configs"
-	"github.com/saulova/seam/plugins/opentelemetry/interfaces"
+	openTelemetryInterfaces "github.com/saulova/seam/plugins/opentelemetry/interfaces"
 	"github.com/saulova/seam/plugins/opentelemetry/providers"
 
 	"go.opentelemetry.io/otel"
@@ -15,6 +14,7 @@ import (
 type OpenTelemetryManager struct {
 	dependencyContainer       *dependencies.DependencyContainer
 	openTelemetryPluginConfig *configs.OpenTelemetryPluginConfig
+	logger                    libsInterfaces.LoggerInterface
 }
 
 const OpenTelemetryManagerId = "plugins.opentelemetry.managers.OpenTelemetryManager"
@@ -23,10 +23,12 @@ func NewOpenTelemetryManager() *OpenTelemetryManager {
 	dependencyContainer := dependencies.GetDependencyContainer()
 
 	openTelemetryPluginConfig := dependencyContainer.GetDependency(configs.OpenTelemetryPluginConfigId).(*configs.OpenTelemetryPluginConfig)
+	logger := dependencyContainer.GetDependency(libsInterfaces.LoggerInterfaceId).(libsInterfaces.LoggerInterface)
 
 	instance := &OpenTelemetryManager{
 		dependencyContainer:       dependencyContainer,
 		openTelemetryPluginConfig: openTelemetryPluginConfig,
+		logger:                    logger,
 	}
 
 	dependencyContainer.AddDependency(OpenTelemetryManagerId, instance)
@@ -36,23 +38,22 @@ func NewOpenTelemetryManager() *OpenTelemetryManager {
 
 func (o *OpenTelemetryManager) InitTracerProvider() {
 	if o.openTelemetryPluginConfig.Provider != "" {
-		telemetryProviders := o.dependencyContainer.GetDependency(o.openTelemetryPluginConfig.Provider).(interfaces.TelemetryProviderInterface)
+		telemetryProviders := o.dependencyContainer.GetDependency(o.openTelemetryPluginConfig.Provider).(openTelemetryInterfaces.TelemetryProviderInterface)
 
 		err := telemetryProviders.Register(o.openTelemetryPluginConfig.ProviderConfig)
 		if err != nil {
-			log.Fatal(err)
+			o.logger.Error("open telemetry provider register error", err)
 		}
 
 		return
 	}
 
-	telemetryProviders := o.dependencyContainer.GetDependency(providers.DefaultTelemetryProvidersId).(interfaces.TelemetryProviderInterface)
+	telemetryProviders := o.dependencyContainer.GetDependency(providers.DefaultTelemetryProvidersId).(openTelemetryInterfaces.TelemetryProviderInterface)
 
 	err := telemetryProviders.Register(o.openTelemetryPluginConfig.ProviderConfig)
 	if err != nil {
-		log.Fatal(err)
+		o.logger.Error("open telemetry default provider register error", err)
 	}
-
 }
 
 func (o *OpenTelemetryManager) NewTracer(name string) trace.Tracer {

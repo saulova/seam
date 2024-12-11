@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/saulova/seam/libs/dependencies"
+	"github.com/saulova/seam/libs/interfaces"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/healthcheck"
 )
 
@@ -12,6 +12,7 @@ type ServerHandler struct {
 	dependencyContainer *dependencies.DependencyContainer
 	serverConfig        *ServerConfig
 	app                 *fiber.App
+	logger              interfaces.LoggerInterface
 }
 
 const ServerHandlerId = "infra.api.server.ServerHandler"
@@ -20,6 +21,7 @@ func NewServerHandler() *ServerHandler {
 	dependencyContainer := dependencies.GetDependencyContainer()
 
 	serverConfig := dependencyContainer.GetDependency(ServerConfigId).(*ServerConfig)
+	logger := dependencyContainer.GetDependency(interfaces.LoggerInterfaceId).(interfaces.LoggerInterface)
 
 	app := fiber.New(fiber.Config{
 		ReadTimeout:                  serverConfig.ReadTimeout,
@@ -59,6 +61,7 @@ func NewServerHandler() *ServerHandler {
 		dependencyContainer: dependencyContainer,
 		serverConfig:        serverConfig,
 		app:                 app,
+		logger:              logger,
 	}
 
 	dependencyContainer.AddDependency("health-check.live", false)
@@ -105,7 +108,7 @@ func (s *ServerHandler) StartServer() {
 	}
 
 	if err != nil {
-		log.Fatal("Oops... Server is not running! Reason: %v", err)
+		s.logger.Fatal("Server is not running!", err)
 
 		return
 	}

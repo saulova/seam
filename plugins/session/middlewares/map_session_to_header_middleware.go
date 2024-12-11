@@ -8,24 +8,29 @@ import (
 	"github.com/saulova/seam/plugins/session/configs"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 )
 
-type MapSessionToHeaderMiddleware struct{}
+type MapSessionToHeaderMiddleware struct {
+	logger interfaces.LoggerInterface
+}
 
 const MapSessionToHeaderMiddlewareId = "plugins.session.middlewares.MapSessionToHeaderMiddleware"
 
 func NewMapSessionToHeaderMiddleware() interfaces.BuilderInterface {
 	dependencyContainer := dependencies.GetDependencyContainer()
 
-	instance := &MapSessionToHeaderMiddleware{}
+	logger := dependencyContainer.GetDependency(interfaces.LoggerInterfaceId).(interfaces.LoggerInterface)
+
+	instance := &MapSessionToHeaderMiddleware{
+		logger: logger,
+	}
 
 	dependencyContainer.AddDependency(MapSessionToHeaderMiddlewareId, instance)
 
 	return instance
 }
 
-func (s *MapSessionToHeaderMiddleware) Build(config interface{}) (interface{}, error) {
+func (m *MapSessionToHeaderMiddleware) Build(config interface{}) (interface{}, error) {
 	sessionDataToHeaderMiddlewareConfig, err := configs.NewMapSessionToHeaderMiddlewareConfig(config)
 	if err != nil {
 		return nil, err
@@ -35,7 +40,7 @@ func (s *MapSessionToHeaderMiddleware) Build(config interface{}) (interface{}, e
 		sessionDataMap := ctx.Locals("session")
 
 		if sessionDataMap == nil {
-			log.Error("missing session")
+			m.logger.Error("missing session")
 
 			return ctx.Next()
 		}
@@ -53,7 +58,7 @@ func (s *MapSessionToHeaderMiddleware) Build(config interface{}) (interface{}, e
 			case nil:
 				value = ""
 			default:
-				log.Error(fmt.Sprintf("unexpected type %T", v))
+				m.logger.Error(fmt.Sprintf("unexpected type %T", v))
 			}
 
 			ctx.Request().Header.Set(headerKey, value)
