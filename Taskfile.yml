@@ -2,7 +2,7 @@ version: "3"
 
 tasks:
   build-plugins:
-    desc: "Build plugins"
+    desc: Build plugins
     env:
       GO111MODULE: on
       CGO_ENABLED: 1
@@ -22,6 +22,17 @@ tasks:
       GOARCH: amd64
     cmds:
       - go build -o=./entrypoint/seam ./entrypoint
+
+  create-configs:
+    desc: Create ./.configs and ./.certs
+    cmds:
+      - |
+        set -e
+        mkdir -p ./.configs/;
+        mkdir -p ./.certs;
+        if [ -z "$( ls -A './.configs' )" ]; then
+          cp -r ./.configs.sample/* ./.configs/;
+        fi;
 
   dev:
     desc: Run app

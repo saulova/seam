@@ -1,0 +1,16 @@
+services:
+  seam:
+    build:
+      context: ./
+    container_name: seam-dev
+    restart: always
+    environment:
+      LOG_LEVEL: DEBUG
+    ports:
+      - 8090:8090
+    networks:
+      - seam_net
+
+networks:
+  seam_net:
+    driver: bridge
