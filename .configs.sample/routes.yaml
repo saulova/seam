@@ -1,0 +1,6 @@
+routes:
+  # HelloWorldService
+  HomeRoute:
+    gatewayPath: /
+    methods: [GET]
+    action: HomeAction
