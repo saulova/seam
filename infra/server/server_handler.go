@@ -16,6 +16,8 @@ type ServerHandler struct {
 }
 
 const ServerHandlerId = "infra.api.server.ServerHandler"
+const HealthCheckLiveId = "health-check.live"
+const HealthCheckReadyId = "health-check.ready"
 
 func NewServerHandler() *ServerHandler {
 	dependencyContainer := dependencies.GetDependencyContainer()
@@ -64,8 +66,8 @@ func NewServerHandler() *ServerHandler {
 		logger:              logger,
 	}
 
-	dependencyContainer.AddDependency("health-check.live", false)
-	dependencyContainer.AddDependency("health-check.ready", false)
+	dependencyContainer.AddDependency(HealthCheckLiveId, false)
+	dependencyContainer.AddDependency(HealthCheckReadyId, false)
 	dependencyContainer.AddDependency(ServerHandlerId, instance)
 
 	return instance
@@ -79,11 +81,11 @@ func (s *ServerHandler) addHealthCheck() {
 	s.app.Use(
 		healthcheck.New(healthcheck.Config{
 			LivenessProbe: func(c *fiber.Ctx) bool {
-				return s.dependencyContainer.GetDependency("health-check.live").(bool)
+				return s.dependencyContainer.GetDependency(HealthCheckLiveId).(bool)
 			},
 			LivenessEndpoint: s.serverConfig.HealthCheckLiveRoute,
 			ReadinessProbe: func(c *fiber.Ctx) bool {
-				return s.dependencyContainer.GetDependency("health-check.ready").(bool)
+				return s.dependencyContainer.GetDependency(HealthCheckReadyId).(bool)
 			},
 			ReadinessEndpoint: s.serverConfig.HealthCheckReadyRoute,
 		}),
@@ -99,7 +101,7 @@ func (s *ServerHandler) StartServer() {
 
 	var err error
 
-	s.dependencyContainer.AddDependency("health-check.live", true)
+	s.dependencyContainer.AddDependency(HealthCheckLiveId, true)
 
 	if s.serverConfig.TLS {
 		err = s.app.ListenTLS(s.serverConfig.Address, s.serverConfig.CertFile, s.serverConfig.KeyFile)
@@ -115,5 +117,5 @@ func (s *ServerHandler) StartServer() {
 }
 
 func (s *ServerHandler) SetHealthCheckReady(status bool) {
-	s.dependencyContainer.AddDependency("health-check.ready", status)
+	s.dependencyContainer.AddDependency(HealthCheckReadyId, status)
 }
