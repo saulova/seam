@@ -11,7 +11,7 @@
   <p align="center">
     Seam is a lightweight and high-performance API Gateway built with Go, leveraging the <a href="https://github.com/gofiber/fiber">Fiber</a> web framework. Designed for modern microservices architectures, Seam helps manage traffic routing, load balancing, authentication, and monitoring in a simple and efficient way.
     <br />
-    <a href="https://saulova.github.io/seam/"><strong>Explore the docs</strong></a>
+    <a href="https://seam.sauloalvarenga.dev.br"><strong>Explore the docs</strong></a>
   </p>
 </div>
 

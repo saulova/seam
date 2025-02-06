@@ -3,4 +3,4 @@ actions:
   HomeAction:
     use: plugins.httpfw.actions.HttpAction
     config:
-      upstreamEndpoint: https://saulova.github.io/seam/
+      upstreamEndpoint: https://seam.sauloalvarenga.dev.br

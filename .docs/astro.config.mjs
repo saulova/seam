@@ -4,8 +4,8 @@ import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://saulova.github.io",
-  base: "seam",
+  site: "https://seam.sauloalvarenga.dev.br",
+  base: "",
   integrations: [
     starlight({
       title: "🪡 Seam API Gateway",
